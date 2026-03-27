@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -57,10 +57,16 @@
     --os-pending: 25 95% 53%;
     --os-pending-foreground: 0 0% 100%;
 
+    /* Glass tokens */
+    --glass-bg: 0 0% 100% / 0.6;
+    --glass-border: 0 0% 100% / 0.3;
+    --glass-blur: 16px;
+
     --os-gradient-primary: linear-gradient(135deg, hsl(25, 95%, 53%), hsl(30, 100%, 45%));
     --os-gradient-header: linear-gradient(135deg, hsl(25, 95%, 53%), hsl(18, 90%, 48%));
     --os-shadow-card: 0 1px 3px 0 hsl(220 20% 14% / 0.06), 0 1px 2px -1px hsl(220 20% 14% / 0.06);
-    --os-shadow-elevated: 0 4px 12px 0 hsl(220 20% 14% / 0.08);
+    --os-shadow-elevated: 0 8px 24px -4px hsl(220 20% 14% / 0.1), 0 4px 8px -2px hsl(220 20% 14% / 0.06);
+    --os-shadow-glow: 0 0 20px hsl(25 95% 53% / 0.15);
   }
 
   .dark {
@@ -91,6 +97,9 @@
     --sidebar-accent-foreground: 30 10% 94%;
     --sidebar-border: 220 14% 18%;
     --sidebar-ring: 25 95% 53%;
+
+    --glass-bg: 220 18% 12% / 0.6;
+    --glass-border: 220 18% 20% / 0.3;
   }
 }
 
@@ -100,12 +109,16 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
+  .font-display {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  }
+
   .os-gradient-primary {
     background: var(--os-gradient-primary);
   }
@@ -118,4 +131,51 @@
   .os-shadow-elevated {
     box-shadow: var(--os-shadow-elevated);
   }
+  .os-shadow-glow {
+    box-shadow: var(--os-shadow-glow);
+  }
+
+  .glass-card {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  .glass-card-strong {
+    background: hsl(0 0% 100% / 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid hsl(0 0% 100% / 0.5);
+  }
+
+  .dark .glass-card-strong {
+    background: hsl(220 18% 12% / 0.8);
+    border: 1px solid hsl(220 18% 20% / 0.5);
+  }
+
+  /* Premium shimmer skeleton */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.08) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  /* Stagger animation helper */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
 }

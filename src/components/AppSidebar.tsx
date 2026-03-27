@@ -48,12 +48,12 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg os-gradient-primary flex items-center justify-center shrink-0">
-            <span className="text-primary-foreground font-extrabold text-sm">OS</span>
+          <div className="w-9 h-9 rounded-lg os-gradient-primary flex items-center justify-center shrink-0 os-shadow-glow">
+            <span className="text-primary-foreground font-extrabold text-sm font-display">OS</span>
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-bold text-base text-foreground leading-tight">OS10</span>
+              <span className="font-bold text-base text-foreground leading-tight font-display">OS10</span>
               <span className="text-[10px] tracking-widest text-muted-foreground uppercase">Ordens de Serviço</span>
             </div>
           )}

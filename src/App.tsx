@@ -15,6 +15,8 @@ import QuickCheckoutPage from "./pages/QuickCheckoutPage";
 import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,16 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Admin Panel */}
+          <Route path="/admin/*" element={
+            <AdminLayout>
+              <Routes>
+                <Route path="/" element={<AdminDashboard />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AdminLayout>
+          } />
+          {/* Client App */}
           <Route path="/*" element={
             <AppLayout>
               <Routes>

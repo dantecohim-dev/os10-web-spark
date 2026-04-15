@@ -219,6 +219,7 @@ export type Database = {
           address_street: string | null
           address_zip: string | null
           cnpj: string | null
+          cpf: string | null
           created_at: string
           email: string | null
           id: string
@@ -236,6 +237,7 @@ export type Database = {
           address_street?: string | null
           address_zip?: string | null
           cnpj?: string | null
+          cpf?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -253,6 +255,7 @@ export type Database = {
           address_street?: string | null
           address_zip?: string | null
           cnpj?: string | null
+          cpf?: string | null
           created_at?: string
           email?: string | null
           id?: string

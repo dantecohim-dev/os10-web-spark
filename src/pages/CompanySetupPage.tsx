@@ -16,6 +16,7 @@ export default function CompanySetupPage() {
   const [form, setForm] = useState({
     name: "",
     cnpj: "",
+    cpf: "",
     phone: "",
     email: "",
   });
@@ -25,10 +26,15 @@ export default function CompanySetupPage() {
     if (!user) return;
     setLoading(true);
 
-    // Create company
-    const { data: company, error: companyError } = await supabase
-      .from("companies")
-      .insert({ name: form.name, cnpj: form.cnpj || null, phone: form.phone || null, email: form.email || null })
+    const { data: company, error: companyError } = await (supabase
+      .from("companies") as any)
+      .insert({
+        name: form.name,
+        cnpj: form.cnpj || null,
+        cpf: form.cpf || null,
+        phone: form.phone || null,
+        email: form.email || null,
+      })
       .select("id")
       .single();
 
@@ -38,7 +44,6 @@ export default function CompanySetupPage() {
       return;
     }
 
-    // Link profile to company
     const { error: profileError } = await supabase
       .from("profiles")
       .update({ company_id: company.id })
@@ -50,7 +55,6 @@ export default function CompanySetupPage() {
       return;
     }
 
-    // Create admin role
     const { error: roleError } = await supabase
       .from("user_roles")
       .insert({ user_id: user.id, company_id: company.id, role: "admin" });
@@ -61,7 +65,6 @@ export default function CompanySetupPage() {
       return;
     }
 
-    // Create free subscription
     const { error: subError } = await supabase
       .from("subscriptions")
       .insert({ company_id: company.id });
@@ -72,7 +75,6 @@ export default function CompanySetupPage() {
 
     toast.success("Empresa cadastrada com sucesso!");
     setLoading(false);
-    // Force reload to refresh profile with company_id
     window.location.href = "/";
   };
 
@@ -95,16 +97,22 @@ export default function CompanySetupPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cnpj">CNPJ</Label>
-                <Input id="cnpj" placeholder="00.000.000/0000-00" value={form.cnpj} onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
+                <Input id="cnpj" placeholder="00.000.000/0001-00" value={form.cnpj} onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="cpf">CPF</Label>
+                <Input id="cpf" placeholder="000.000.000-00" value={form.cpf} onChange={e => setForm(f => ({ ...f, cpf: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Telefone</Label>
                 <Input id="phone" placeholder="(00) 00000-0000" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email da empresa</Label>
-              <Input id="email" type="email" placeholder="contato@empresa.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              <div className="space-y-2">
+                <Label htmlFor="email">Email da empresa</Label>
+                <Input id="email" type="email" placeholder="contato@empresa.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              </div>
             </div>
             <Button type="submit" className="w-full os-gradient-primary border-0" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

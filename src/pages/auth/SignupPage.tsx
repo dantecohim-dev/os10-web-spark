@@ -5,13 +5,97 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+const BUSINESS_AREAS = [
+  "Mecânico de Automóveis – Autônomo",
+  "Oficina Mecânica de Automóveis – Empresa",
+  "Mecânico de Motocicletas – Autônomo",
+  "Oficina de Motocicletas – Empresa",
+  "Mecânico de Bicicletas – Autônomo",
+  "Oficina de Bicicletas – Empresa",
+  "Mecânico Geral – Autônomo",
+  "Oficina Mecânica Geral – Empresa",
+  "Funileiro – Autônomo",
+  "Funilaria – Empresa",
+  "Borracheiro – Autônomo",
+  "Borracharia – Empresa",
+  "Estética Automotiva – Autônomo",
+  "Centro de Estética Automotiva – Empresa",
+  "Instalador de Acessórios Automotivos – Autônomo",
+  "Loja de Acessórios Automotivos – Empresa",
+  "Eletricista – Autônomo",
+  "Serviços Elétricos – Empresa",
+  "Encanador – Autônomo",
+  "Serviços Hidráulicos – Empresa",
+  "Técnico em Ar-condicionado – Autônomo",
+  "Empresa de Ar-condicionado – Empresa",
+  "Assistência Técnica de Ar-condicionado – Empresa",
+  "Técnico em Refrigeração – Autônomo",
+  "Assistência Técnica de Refrigeração – Empresa",
+  "Instalador de Energia Solar – Autônomo",
+  "Empresa de Energia Solar – Empresa",
+  "Técnico em Manutenção de Celulares – Autônomo",
+  "Assistência Técnica de Celulares – Empresa",
+  "Técnico em Manutenção de Computadores – Autônomo",
+  "Assistência Técnica de Computadores – Empresa",
+  "Técnico em Eletrodomésticos – Autônomo",
+  "Assistência Técnica de Eletrodomésticos – Empresa",
+  "Pedreiro – Autônomo",
+  "Empresa de Construção – Empresa",
+  "Pintor – Autônomo",
+  "Empresa de Pintura – Empresa",
+  "Instalador de Drywall – Autônomo",
+  "Empresa de Drywall – Empresa",
+  "Instalador de Pisos e Revestimentos – Autônomo",
+  "Empresa de Pisos e Revestimentos – Empresa",
+  "Marceneiro – Autônomo",
+  "Marcenaria – Empresa",
+  "Serralheiro – Autônomo",
+  "Serralheria – Empresa",
+  "Vidraceiro – Autônomo",
+  "Vidraçaria – Empresa",
+  "Instalador de Câmeras e Alarmes – Autônomo",
+  "Empresa de Segurança Eletrônica – Empresa",
+  "Técnico em Redes – Autônomo",
+  "Empresa de Infraestrutura de TI – Empresa",
+  "Profissional de Limpeza – Autônomo",
+  "Empresa de Limpeza – Empresa",
+  "Jardineiro – Autônomo",
+  "Empresa de Jardinagem – Empresa",
+  "Dedetizador – Autônomo",
+  "Dedetizadora – Empresa",
+  "Agrônomo – Autônomo",
+  "Empresa de Consultoria Agronômica – Empresa",
+  "Médico Veterinário – Autônomo",
+  "Clínica Veterinária Rural – Empresa",
+  "Aplicador de Defensivos Agrícolas – Autônomo",
+  "Empresa de Pulverização Agrícola – Empresa",
+  "Instalador de Sistemas de Irrigação – Autônomo",
+  "Empresa de Irrigação – Empresa",
+  "Mecânico de Máquinas Agrícolas – Autônomo",
+  "Oficina de Máquinas Agrícolas – Empresa",
+];
+
+const ORIGINS = [
+  "Google",
+  "Instagram",
+  "Pesquisa na loja de aplicativos",
+  "Indicação",
+  "Evento / Feira",
+  "Outro",
+];
+
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [businessArea, setBusinessArea] = useState("");
+  const [customBusinessArea, setCustomBusinessArea] = useState("");
+  const [origin, setOrigin] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -21,12 +105,32 @@ export default function SignupPage() {
       toast.error("A senha deve ter pelo menos 6 caracteres");
       return;
     }
+    if (!phone.trim()) {
+      toast.error("WhatsApp é obrigatório");
+      return;
+    }
+    if (!businessArea) {
+      toast.error("Selecione sua área de atuação");
+      return;
+    }
+
+    const finalBusinessArea = businessArea === "__other__" ? customBusinessArea : businessArea;
+    if (businessArea === "__other__" && !customBusinessArea.trim()) {
+      toast.error("Digite sua área de atuação");
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: {
+          full_name: fullName,
+          phone,
+          business_area: finalBusinessArea,
+          origin: origin || null,
+        },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -50,18 +154,69 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
+            {/* 1. Nome */}
             <div className="space-y-2">
-              <Label htmlFor="name">Nome completo</Label>
+              <Label htmlFor="name">Nome completo *</Label>
               <Input id="name" placeholder="Seu nome" value={fullName} onChange={e => setFullName(e.target.value)} required />
             </div>
+
+            {/* 2. WhatsApp */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="phone">WhatsApp (Celular) *</Label>
+              <Input id="phone" type="tel" placeholder="(00) 00000-0000" value={phone} onChange={e => setPhone(e.target.value)} required />
+            </div>
+
+            {/* 3. Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
               <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
+
+            {/* 4. Senha */}
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">Senha *</Label>
               <Input id="password" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} required />
             </div>
+
+            {/* 5. Área de atuação */}
+            <div className="space-y-2">
+              <Label>Área de atuação *</Label>
+              <Select value={businessArea} onValueChange={setBusinessArea}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione sua área" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {BUSINESS_AREAS.map(area => (
+                    <SelectItem key={area} value={area}>{area}</SelectItem>
+                  ))}
+                  <SelectItem value="__other__">Outro (digitar)</SelectItem>
+                </SelectContent>
+              </Select>
+              {businessArea === "__other__" && (
+                <Input
+                  placeholder="Digite sua área de atuação"
+                  value={customBusinessArea}
+                  onChange={e => setCustomBusinessArea(e.target.value)}
+                  className="mt-2"
+                />
+              )}
+            </div>
+
+            {/* 6. Origem */}
+            <div className="space-y-2">
+              <Label>Como conheceu o OS10?</Label>
+              <Select value={origin} onValueChange={setOrigin}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ORIGINS.map(o => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <Button type="submit" className="w-full os-gradient-primary border-0" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Criar Conta

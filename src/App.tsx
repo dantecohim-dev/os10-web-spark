@@ -15,6 +15,7 @@ import ServicesPage from "./pages/ServicesPage";
 import QuickCheckoutPage from "./pages/QuickCheckoutPage";
 import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
+import ChecklistsPage from "./pages/ChecklistsPage";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/auth/LoginPage";
 import SignupPage from "./pages/auth/SignupPage";
@@ -97,6 +98,7 @@ const AppRoutes = () => (
             <Route path="/clientes" element={<ClientsPage />} />
             <Route path="/produtos" element={<ProductsPage />} />
             <Route path="/servicos" element={<ServicesPage />} />
+            <Route path="/checklists" element={<ChecklistsPage />} />
             <Route path="/caixa" element={<QuickCheckoutPage />} />
             <Route path="/relatorios" element={<ReportsPage />} />
             <Route path="/config" element={<SettingsPage />} />

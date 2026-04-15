@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   Settings,
   LogOut,
+  ClipboardCheck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -31,6 +32,7 @@ const mainItems = [
   { title: "Clientes", url: "/clientes", icon: Users },
   { title: "Produtos", url: "/produtos", icon: Package },
   { title: "Serviços", url: "/servicos", icon: Wrench },
+  { title: "Checklists", url: "/checklists", icon: ClipboardCheck },
   { title: "Caixa Rápido", url: "/caixa", icon: ShoppingCart },
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
 ];

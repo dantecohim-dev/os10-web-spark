@@ -1130,6 +1130,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_company_for_current_user: {
+        Args: {
+          _cnpj?: string
+          _cpf?: string
+          _email?: string
+          _name: string
+          _phone?: string
+        }
+        Returns: string
+      }
       get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

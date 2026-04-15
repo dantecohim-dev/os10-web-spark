@@ -96,27 +96,38 @@ export default function SignupPage() {
   const [businessArea, setBusinessArea] = useState("");
   const [customBusinessArea, setCustomBusinessArea] = useState("");
   const [origin, setOrigin] = useState("");
+  const [customOrigin, setCustomOrigin] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (password.length < 6) {
       toast.error("A senha deve ter pelo menos 6 caracteres");
       return;
     }
+
     if (!phone.trim()) {
       toast.error("WhatsApp é obrigatório");
       return;
     }
+
     if (!businessArea) {
       toast.error("Selecione sua área de atuação");
       return;
     }
 
-    const finalBusinessArea = businessArea === "__other__" ? customBusinessArea : businessArea;
-    if (businessArea === "__other__" && !customBusinessArea.trim()) {
+    const finalBusinessArea = businessArea === "__other__" ? customBusinessArea.trim() : businessArea;
+    const finalOrigin = origin === "Outro" ? customOrigin.trim() : origin;
+
+    if (businessArea === "__other__" && !finalBusinessArea) {
       toast.error("Digite sua área de atuação");
+      return;
+    }
+
+    if (origin === "Outro" && !finalOrigin) {
+      toast.error("Digite como conheceu o OS10");
       return;
     }
 
@@ -129,12 +140,13 @@ export default function SignupPage() {
           full_name: fullName,
           phone,
           business_area: finalBusinessArea,
-          origin: origin || null,
+          origin: finalOrigin || null,
         },
         emailRedirectTo: window.location.origin,
       },
     });
     setLoading(false);
+
     if (error) {
       toast.error(error.message);
     } else {
@@ -154,31 +166,26 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
-            {/* 1. Nome */}
             <div className="space-y-2">
               <Label htmlFor="name">Nome completo *</Label>
-              <Input id="name" placeholder="Seu nome" value={fullName} onChange={e => setFullName(e.target.value)} required />
+              <Input id="name" placeholder="Seu nome" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
             </div>
 
-            {/* 2. WhatsApp */}
             <div className="space-y-2">
               <Label htmlFor="phone">WhatsApp (Celular) *</Label>
-              <Input id="phone" type="tel" placeholder="(00) 00000-0000" value={phone} onChange={e => setPhone(e.target.value)} required />
+              <Input id="phone" type="tel" placeholder="(00) 00000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} required />
             </div>
 
-            {/* 3. Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email *</Label>
-              <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
 
-            {/* 4. Senha */}
             <div className="space-y-2">
               <Label htmlFor="password">Senha *</Label>
-              <Input id="password" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} required />
+              <Input id="password" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
 
-            {/* 5. Área de atuação */}
             <div className="space-y-2">
               <Label>Área de atuação *</Label>
               <Select value={businessArea} onValueChange={setBusinessArea}>
@@ -186,7 +193,7 @@ export default function SignupPage() {
                   <SelectValue placeholder="Selecione sua área" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
-                  {BUSINESS_AREAS.map(area => (
+                  {BUSINESS_AREAS.map((area) => (
                     <SelectItem key={area} value={area}>{area}</SelectItem>
                   ))}
                   <SelectItem value="__other__">Outro (digitar)</SelectItem>
@@ -196,13 +203,11 @@ export default function SignupPage() {
                 <Input
                   placeholder="Digite sua área de atuação"
                   value={customBusinessArea}
-                  onChange={e => setCustomBusinessArea(e.target.value)}
-                  className="mt-2"
+                  onChange={(e) => setCustomBusinessArea(e.target.value)}
                 />
               )}
             </div>
 
-            {/* 6. Origem */}
             <div className="space-y-2">
               <Label>Como conheceu o OS10?</Label>
               <Select value={origin} onValueChange={setOrigin}>
@@ -210,15 +215,26 @@ export default function SignupPage() {
                   <SelectValue placeholder="Selecione (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  {ORIGINS.map(o => (
-                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  {ORIGINS.map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {origin === "Outro" && (
+                <Input
+                  placeholder="Digite a origem"
+                  value={customOrigin}
+                  onChange={(e) => setCustomOrigin(e.target.value)}
+                />
+              )}
             </div>
 
+            <p className="text-xs text-muted-foreground">
+              A validação por código OTP via SMS ficará na próxima etapa de autenticação por telefone.
+            </p>
+
             <Button type="submit" className="w-full os-gradient-primary border-0" disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Criar Conta
             </Button>
             <p className="text-center text-sm text-muted-foreground">

@@ -1,54 +1,75 @@
 
 
-## Plano: Criar todos os CRUDs conectados ao banco de dados
+## Plano: Fase 3 — Ordens de Serviço, Caixa Rápido e Configurações funcionais
 
-Substituir os dados mock por dados reais do banco, com formulários completos de criação, edição e exclusão para Clientes, Produtos, Serviços e Checklists.
-
----
-
-### O que será feito
-
-**1. CRUD de Clientes (`ClientsPage.tsx`)**
-- Listar clientes do banco (query `clients` filtrado por `company_id` via RLS)
-- Dialog/modal para criar novo cliente: nome (obrigatório), telefone (obrigatório), email, identificador, observações
-- Seção de endereços dentro do formulário (adicionar múltiplos endereços com CEP, rua, número, bairro, cidade, estado, complemento)
-- Editar cliente existente (mesmo modal, preenchido)
-- Botão ativar/inativar cliente
-- Excluir cliente com confirmação
-- Busca em tempo real por nome/email/telefone
-
-**2. CRUD de Serviços (`ServicesPage.tsx`)**
-- Listar serviços do banco (`services` table)
-- Dialog para criar/editar: nome, preço, descrição, unidade de medida (select com opções: serviço, hora, m², unidade, diária, metro linear, etc.)
-- Toggle ativo/inativo
-- Excluir com confirmação
-- Busca por nome
-
-**3. CRUD de Produtos (`ProductsPage.tsx`)**
-- Listar produtos do banco (`products` table)
-- Dialog para criar/editar: nome, preço, descrição, estoque, desconto máximo (%), flag "cobrar na OS" (checkbox)
-- Toggle ativo/inativo
-- Excluir com confirmação
-- Busca por nome
-
-**4. CRUD de Checklists (nova página `ChecklistsPage.tsx`)**
-- Nova rota `/checklists` no App.tsx
-- Listar checklists da empresa
-- Dialog para criar/editar: nome do checklist + lista de itens (adicionar/remover/reordenar itens)
-- Excluir checklist com confirmação
+A Fase 2 (cadastros básicos: Clientes, Produtos, Serviços, Checklists) já está conectada ao banco. Agora vamos conectar o restante do sistema operacional ao backend real, fechando o ciclo completo de uso do OS10.
 
 ---
 
-### Detalhes Técnicos
+### O que será construído
 
-- Usar `@tanstack/react-query` para fetch/cache (`useQuery`, `useMutation`, `queryClient.invalidateQueries`)
-- Usar `useAuth()` para obter `profile.company_id` ao inserir registros
-- Componente `Dialog` do shadcn/ui para os formulários modais
-- `AlertDialog` para confirmação de exclusão
-- `toast` do sonner para feedback de sucesso/erro
-- Formatação de moeda brasileira (R$) nos campos de preço
-- Todos os formulários com validação client-side antes de enviar
-- Não precisa de migração -- todas as tabelas já existem no banco
+**1. Ordens de Serviço — Listagem (`OrdersPage.tsx`)**
+- Listar OS e Orçamentos da empresa (tabela `orders`) com `client` via join
+- Filtros por status (Aberta, Orçamento, Finalizada, Cancelada) e por tipo (OS / Orçamento)
+- Busca por número da OS, nome do cliente ou título
+- Cards/linhas com: número, cliente, título, status (badge), valor total, data
+- Botão "Nova OS" e "Novo Orçamento"
+- Click abre detalhe da OS
+
+**2. Ordens de Serviço — Criação (`NewOrderPage.tsx`)**
+- Formulário em etapas:
+  - Tipo (OS ou Orçamento) + Cliente (autocomplete vinculado a `clients`) + endereço de atendimento
+  - Título, descrição do objeto, datas de serviço/entrega
+  - Adicionar serviços (busca em `services`, quantidade, preço editável) → grava em `order_services`
+  - Adicionar produtos (busca em `products`, quantidade, desconto) → grava em `order_products`
+  - Anexar checklist (escolher de `checklists`, copia itens para `order_checklists` + `order_checklist_items`)
+  - Observações públicas e internas, desconto, repetição (dias)
+- Cálculo automático de subtotal e total
+- Salvar gera `order_number` automático e redireciona ao detalhe
+
+**3. Ordens de Serviço — Detalhe (`OrderDetailPage.tsx`)**
+- Carrega OS completa (orders + services + products + checklists + items + payments + photos + comments + signature)
+- Abas: Resumo · Serviços/Produtos · Checklist · Fotos · Pagamentos · Comentários · Assinatura
+- Mudar status (Orçamento → Aberta → Finalizada / Cancelada)
+- Marcar itens do checklist como feitos (update em `order_checklist_items`)
+- Upload de fotos (bucket `os-photos`) com estágio (antes/durante/depois)
+- Registrar pagamentos (parcial/total, método) em `order_payments`
+- Comentários internos e públicos em `order_comments`
+- Assinatura digital (canvas) salva em `order_signatures`
+- Ações: imprimir, exportar PDF, enviar por WhatsApp, duplicar
+
+**4. Caixa Rápido (`QuickCheckoutPage.tsx`)**
+- Já existe fluxo multi-step de UI; conectar ao banco
+- Etapa Produtos: selecionar produtos de `products`, quantidade
+- Etapa Resumo: total calculado, observações
+- Etapa Pagamento: método (dinheiro/pix/cartão), confirmar
+- Salvar grava em `quick_sales` + `quick_sale_items` e mostra recibo
+
+**5. Dashboard (`Dashboard.tsx`)**
+- Substituir mocks por dados reais:
+  - OS abertas, finalizadas no mês, faturamento do mês (sum de `order_payments` + `quick_sales`)
+  - Próximas OS agendadas (por `service_date`)
+  - Repetições pendentes (`service_repeats` com `next_contact_date <= hoje`)
+  - Top clientes do mês
+
+**6. Configurações (`SettingsPage.tsx`)**
+- Editar dados da empresa (nome, CNPJ/CPF, telefone, e-mail, endereço completo, logo, termo de responsabilidade) — update em `companies`
+- Upload de logo no bucket `os-photos` (subpasta `logos/`)
+- Visualizar plano atual (de `subscriptions`) e limites de uso
+
+---
+
+### Detalhes técnicos
+
+- **React Query** (`useQuery` / `useMutation`) com `invalidateQueries` para tudo
+- **Supabase Storage** para fotos da OS e logo (`os-photos`, já público)
+- **Validação Zod** em todos os formulários (nome, valores, e-mail, telefone)
+- **Multi-tenancy**: `company_id` vem do `useAuth()` e RLS já filtra
+- **Cálculo de subtotal**: feito no client antes do insert (`price * quantity - discount`)
+- **Sem migrações novas**: todas as tabelas já existem com RLS configurada
+- **Formatação BRL** em todos os valores monetários
+- **Toasts** (`sonner`) para feedback de sucesso/erro
+- **Loading skeletons** durante fetches
 
 ---
 
@@ -56,10 +77,22 @@ Substituir os dados mock por dados reais do banco, com formulários completos de
 
 | Ação | Arquivo |
 |------|---------|
-| Reescrever | `src/pages/ClientsPage.tsx` |
-| Reescrever | `src/pages/ProductsPage.tsx` |
-| Reescrever | `src/pages/ServicesPage.tsx` |
-| Criar | `src/pages/ChecklistsPage.tsx` |
-| Editar | `src/App.tsx` (adicionar rota `/checklists`) |
-| Editar | `src/components/AppSidebar.tsx` (adicionar link Checklists no menu) |
+| Reescrever | `src/pages/OrdersPage.tsx` |
+| Reescrever | `src/pages/NewOrderPage.tsx` |
+| Reescrever | `src/pages/OrderDetailPage.tsx` |
+| Reescrever | `src/pages/QuickCheckoutPage.tsx` |
+| Reescrever | `src/pages/Dashboard.tsx` |
+| Reescrever | `src/pages/SettingsPage.tsx` |
+| Criar | `src/lib/orders.ts` (helpers de cálculo e queries reutilizáveis) |
+| Criar | `src/components/orders/OrderForm.tsx` (componente compartilhado novo/edição) |
+| Criar | `src/components/orders/SignaturePad.tsx` |
+
+---
+
+### Fora do escopo desta fase
+
+- Sistema de assinaturas/pagamento Premium (Fase 5)
+- Relatórios avançados (Fase 5)
+- Notificações WhatsApp/SMS, painel público do cliente, agenda de repetição com push (Fase 5)
+- Usuários adicionais e perfis de permissão (Fase 5)
 

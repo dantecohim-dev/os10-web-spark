@@ -277,10 +277,10 @@ const NewOrderPage = () => {
       <Card className="os-shadow-card">
         <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><CheckSquare className="h-4 w-4 text-primary" /> Checklist</CardTitle></CardHeader>
         <CardContent>
-          <Select value={checklistId} onValueChange={setChecklistId}>
+          <Select value={checklistId || "none"} onValueChange={(v) => setChecklistId(v === "none" ? "" : v)}>
             <SelectTrigger><SelectValue placeholder="Anexar checklist (opcional)" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
+              <SelectItem value="none">Nenhum</SelectItem>
               {checklists.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
